@@ -6,15 +6,27 @@ import os
 from typing import List
 
 
-def extract_symbols(filepath: str) -> str:
-    with open(filepath, mode="r") as file:
-        csv_reader = csv.reader(file)
-        header = next(csv_reader)
-        symbols = []
-
-        for row in csv_reader:
-            symbol = row[0]
-            symbols.append(symbol)
+def extract_symbols(filepath: str, exch: str) -> str:
+    symbols = []
+    with open(filepath, mode="r", encoding="latin-1") as file:
+        if exch == "b3":
+            csv_reader = csv.reader(file, delimiter=";")
+            next(csv_reader)
+            next(csv_reader)
+            for row in csv_reader:
+                symbol = row[0] + ".SA"
+                symbols.append(symbol)
+            symbols = symbols[:-2]
+        elif exch in {"nyse", "nasdaq"}:
+            csv_reader = csv.reader(file, delimiter=",")
+            next(csv_reader)
+            for row in csv_reader:
+                symbol = row[0]
+                symbols.append(symbol)
+        else:
+            raise ValueError(
+                f"Invalid exchange '{exch}'. Must be 'b3', 'nyse', or 'nasdaq'"
+            )
 
     directory = os.path.dirname(filepath)
     filename, extension = os.path.splitext(os.path.basename(filepath))
@@ -94,24 +106,3 @@ def check_integrity(filepath: str, start_date: str, end_date: str) -> None:
     with open(output_filepath3, "w") as output_file:
         output_file.write(",".join(cleaned_symbols))
     print(f"Cleaned data saved to {output_filepath3}")
-
-
-def main(filepath: str, start_date: str, end_date: str) -> None:
-    filepath1 = extract_symbols(filepath)
-    check_integrity(filepath1, start_date, end_date)
-
-
-if __name__ == "__main__":
-    # Check if CLI arguments are correct
-    if len(sys.argv) != 4:
-        print("Uso: python3 pre_processing.py <filepath.csv> <start_date> <end_date>")
-        sys.exit(1)
-
-    filepath = sys.argv[1]
-    start_date = sys.argv[2]
-    end_date = sys.argv[3]
-
-    if not os.path.isfile(filepath):
-        raise FileNotFoundError(f"The file {filepath} does not exist.")
-
-    main(filepath, start_date, end_date)

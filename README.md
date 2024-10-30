@@ -51,17 +51,19 @@ A função identifica os símbolos das ações, remove leituras com NaN e erros 
 
 Execute o seguinte comando:
 
-```bash
-python3 pre_processing.py <filepath.csv> <start_date> <end_date>
+```python
+extract_symbols(filepath: str, exch: str) -> str
+check_integrity(filepath: str, start_date: str, end_date: str) -> None
 ```
 
 - `<filepath.csv>`: caminho do arquivo.
 - `<start_date>`: data no formato AAAA-MM-DD.
 - `<end_date>`: data no formato AAAA-MM-DD.
+- `<exch>`: 'b3', 'nasdaq', 'nyse'.
 
 ## Estrutura de Saída
 
-O script irá criar os seguintes arquivos:
+Os scripts vão criar os seguintes arquivos:
 
 - `raw_data/parsed_<nome_do_arquivo>.csv`: Um arquivo CSV com os símbolos extraídos.
 - `removed_data/download_failed_parsed_<nome_do_arquivo>.csv`: Um arquivo com os símbolos de ações para os quais os dados não puderam ser baixados.
