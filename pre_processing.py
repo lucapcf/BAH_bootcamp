@@ -17,15 +17,16 @@ def extract_symbols(filepath: str, exch: str) -> str:
                 symbol = row[0] + ".SA"
                 symbols.append(symbol)
             symbols = symbols[:-2]
-        elif exch in {"nyse", "nasdaq"}:
+        elif exch in {"nyse", "nasdaq", "sp100"}:
             csv_reader = csv.reader(file, delimiter=",")
             next(csv_reader)
             for row in csv_reader:
                 symbol = row[0]
+                symbol = symbol.replace("/", "-").replace(".", "-")
                 symbols.append(symbol)
         else:
             raise ValueError(
-                f"Invalid exchange '{exch}'. Must be 'b3', 'nyse', or 'nasdaq'"
+                f"Invalid exchange '{exch}'. Must be 'b3', 'nyse', 'nasdaq' or 'sp100'"
             )
 
     directory = os.path.dirname(filepath)
@@ -81,16 +82,28 @@ def check_integrity(filepath: str, start_date: str, end_date: str) -> None:
         print(f"Warning: The directory {directory1} does not exist. Creating it.")
         os.makedirs(directory1, exist_ok=True)
 
+    directory_d = "failed_download"
+    directory_d = os.path.join(directory1, directory_d)
+    if not os.path.exists(directory_d):
+        print(f"Warning: The directory {directory_d} does not exist. Creating it.")
+        os.makedirs(directory_d, exist_ok=True)
+
     filename, extension = os.path.splitext(os.path.basename(filepath))
 
-    new_filename1 = f"download_failed_{filename}{extension}"
-    output_filepath1 = os.path.join(directory1, new_filename1)
+    new_filename_d = f"download_failed_{filename}{extension}"
+    output_filepath1 = os.path.join(directory_d, new_filename_d)
     with open(output_filepath1, "w") as output_file:
         output_file.write(",".join(failed_tickers))
     print(f"Failed downloads saved to {output_filepath1}")
 
-    new_filename2 = f"NaN_values_{filename}{extension}"
-    output_filepath2 = os.path.join(directory1, new_filename2)
+    directory_n = "NaN_values"
+    directory_n = os.path.join(directory1, directory_n)
+    if not os.path.exists(directory_n):
+        print(f"Warning: The directory {directory_n} does not exist. Creating it.")
+        os.makedirs(directory_n, exist_ok=True)
+
+    new_filename_n = f"NaN_values_{filename}{extension}"
+    output_filepath2 = os.path.join(directory_n, new_filename_n)
     with open(output_filepath2, "w") as output_file:
         output_file.write(",".join(dados_dropped))
     print(f"NaN values saved to {output_filepath2}")
